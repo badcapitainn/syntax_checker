@@ -4,7 +4,6 @@ from variable_name_checker import is_valid_variable_name
 def syntax_checker(file_path):
     # Define basic keywords that should be followed by a colon
     keywords_with_colon = ['if', 'elif', 'else', 'for', 'while', 'def', 'class', 'try', 'except']
-    # List of Python reserved keywords
 
     # Open the file and read lines
     with open(file_path, 'r') as f:
@@ -22,16 +21,22 @@ def syntax_checker(file_path):
         if not stripped_line:
             continue
 
-        # Check for matching parentheses
+        # Check for balanced braces ()
         open_parens += stripped_line.count('(') - stripped_line.count(')')
-        if open_parens < 0:
-            error_list.append(f"Error: Unmatched closing parenthesis on line {i}")
+        if open_parens != 0:
+            error_list.append(f"Error: Unmatched opening or closing parenthesis on line {i}")
             open_parens = 0
 
         # Check for balanced braces {}
         open_parens += stripped_line.count('{') - stripped_line.count('}')
-        if open_parens < 0:
-            error_list.append(f"Error: Unmatched closing brace on line {i}")
+        if open_parens != 0:
+            error_list.append(f"Error: Unmatched opening or closing curly brace on line {i}")
+            open_parens = 0
+
+        # check for balanced braces []
+        open_parens += stripped_line.count('[') - stripped_line.count(']')
+        if open_parens != 0:
+            error_list.append(f"Error: Unmatched opening or closing square brace on line {i}")
             open_parens = 0
 
         # Check for basic indentation (assumes 4 spaces for simplicity)
@@ -48,16 +53,12 @@ def syntax_checker(file_path):
         if stripped_line.endswith(':'):
             indent_stack.append(current_indent + 4)
 
-        if indent_stack and current_indent != indent_stack[-1] and stripped_line:
+        if indent_stack and current_indent != indent_stack[-1]:
             error_list.append(f"Error: Incorrect indentation on line {i}")
 
-    if open_parens > 0:
-        error_list.append("Error: Unmatched opening parenthesis/braces")
-
     for i, line in enumerate(lines, 1):
-        # Split each line into words (this is a basic approach)
+        # Split each line into words
         words = line.split()
-
         # Check each word if it's a valid variable name
         for word in words:
             # Let's assume the first word before "=" is the variable name (simplified logic)
